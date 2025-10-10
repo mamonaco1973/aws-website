@@ -60,3 +60,22 @@ resource "aws_s3_bucket_public_access_block" "public_access_block" {
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
+
+# ------------------------------------------------------------------------------------------
+# S3 OBJECT: Upload index.html
+# ------------------------------------------------------------------------------------------
+resource "aws_s3_object" "index" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "index.html"        # Object name inside the bucket
+  source       = "${path.module}/index.html"  # Local path relative to this .tf file
+  etag         = filemd5("${path.module}/index.html")
+  content_type = "text/html"
+
+  # Optional: Set caching behavior
+  cache_control = "max-age=300"
+
+  # Optional: Tags for tracking
+  tags = {
+    Name = "index.html"
+  }
+}
