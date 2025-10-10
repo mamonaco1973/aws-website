@@ -2,7 +2,6 @@
 # LOCALS: Normalize Domain Name (remove trailing dot)
 # ------------------------------------------------------------------------------------------
 locals {
-  # Some AWS APIs return zone.name with a trailing dot (e.g. "example.com.")
   root_domain = trimsuffix(data.aws_route53_zone.selected.name, ".")
 }
 
@@ -17,6 +16,7 @@ resource "aws_acm_certificate" "site_cert" {
 
   lifecycle {
     create_before_destroy = true
+    ignore_changes        = [subject_alternative_names]
   }
 
   tags = {
@@ -39,10 +39,14 @@ resource "aws_route53_record" "cert_validation" {
   zone_id = data.aws_route53_zone.selected.zone_id
   name    = each.value.name
   type    = each.value.type
-  ttl     = 60
+  ttl     = 300
   records = [each.value.value]
-   
+
   allow_overwrite = true
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # ------------------------------------------------------------------------------------------
