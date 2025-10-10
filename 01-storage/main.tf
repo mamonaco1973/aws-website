@@ -21,11 +21,3 @@ data "aws_route53_zone" "selected" {
   name         = var.domain_name        # e.g., "mikes-cloud-solutions.org."
   private_zone = false                  # set true if resolving a private zone
 }
-
-# ---------------------------------------------
-# VARIABLE: Domain Name
-# ---------------------------------------------
-variable "domain_name" {
-  description = "The fully-qualified domain name of the Route 53 hosted zone (e.g., mikes-cloud-solutions.org.)"
-  type        = string
-}
