@@ -1,33 +1,62 @@
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# FILE: bucket.tf
+# PURPOSE:
+#   - Provision a private S3 bucket to store static website content
+#   - Upload a local "index.html" page to the bucket
+#   - Apply encryption, versioning, and access restrictions
+#   - Grant CloudFront Origin Access Control (OAC) permission to read objects
+# ==============================================================================
+# REQUIREMENTS:
+#   - AWS CLI and Terraform properly configured
+#   - CloudFront distribution resource must be defined for OAC reference
+# ==============================================================================
+
+# ==============================================================================
 # DATA: Retrieve AWS Account Info
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# Retrieves the AWS account identity of the current credentials.
+# This is used to generate a globally unique S3 bucket name.
+# ------------------------------------------------------------------------------
 data "aws_caller_identity" "current" {}
 
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
 # LOCALS: Build Valid, Unique Bucket Name
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# Constructs an S3-compliant, globally unique bucket name by:
+#   1. Replacing dots in the domain name with dashes
+#   2. Appending the AWS account ID for uniqueness
+# ------------------------------------------------------------------------------
 locals {
   # Replace dots with dashes to comply with S3 DNS rules
   normalized_domain = replace(var.domain_name, ".", "-")
 
-  # Combine domain and AWS Account ID
+  # Combine normalized domain with account ID for uniqueness
   bucket_name = "${local.normalized_domain}${data.aws_caller_identity.current.account_id}"
 }
 
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
 # S3 BUCKET: Private Website Content Bucket
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# Creates a private S3 bucket for static website content. The bucket name
+# is generated dynamically to ensure global uniqueness across AWS.
+# ------------------------------------------------------------------------------
 resource "aws_s3_bucket" "website" {
   bucket = local.bucket_name
 
+  # ---------------------------------------------------------------------------
+  # Tagging for console identification and cost allocation
+  # ---------------------------------------------------------------------------
   tags = {
     Name = local.bucket_name
   }
 }
 
-# ------------------------------------------------------------------------------------------
-# Enable Versioning
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# ENABLE VERSIONING
+# ==============================================================================
+# Enables versioning on the S3 bucket to preserve historical versions of files.
+# This provides rollback capability and safeguards against accidental deletion.
+# ------------------------------------------------------------------------------
 resource "aws_s3_bucket_versioning" "versioning" {
   bucket = aws_s3_bucket.website.id
 
@@ -36,9 +65,12 @@ resource "aws_s3_bucket_versioning" "versioning" {
   }
 }
 
-# ------------------------------------------------------------------------------------------
-# Enable Default Server-Side Encryption (AES256)
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# ENABLE DEFAULT SERVER-SIDE ENCRYPTION (AES256)
+# ==============================================================================
+# Ensures all uploaded objects are automatically encrypted using the AES256
+# algorithm to meet baseline security and compliance requirements.
+# ------------------------------------------------------------------------------
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   bucket = aws_s3_bucket.website.id
 
@@ -49,9 +81,12 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   }
 }
 
-# ------------------------------------------------------------------------------------------
-# Block All Public Access (CloudFront will handle HTTPS delivery)
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# BLOCK ALL PUBLIC ACCESS
+# ==============================================================================
+# Prevents direct public access to the bucket and its contents.
+# CloudFront (with OAC) will handle HTTPS delivery securely.
+# ------------------------------------------------------------------------------
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
   bucket = aws_s3_bucket.website.id
 
@@ -61,28 +96,40 @@ resource "aws_s3_bucket_public_access_block" "public_access_block" {
   restrict_public_buckets = true
 }
 
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
 # S3 OBJECT: Upload index.html
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# Uploads a local "index.html" file to the S3 bucket. This serves as the
+# default page for the static site. The content type and cache behavior
+# are explicitly defined for optimal browser delivery.
+# ------------------------------------------------------------------------------
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.website.id
-  key          = "index.html"        # Object name inside the bucket
-  source       = "${path.module}/index.html"  # Local path relative to this .tf file
+  key          = "index.html"                       # Object key inside the bucket
+  source       = "${path.module}/index.html"        # Local file path
   etag         = filemd5("${path.module}/index.html")
   content_type = "text/html"
 
-  # Optional: Set caching behavior
+  # ---------------------------------------------------------------------------
+  # Optional: Define caching behavior for browsers and CDNs
+  # ---------------------------------------------------------------------------
   cache_control = "max-age=300"
 
-  # Optional: Tags for tracking
+  # ---------------------------------------------------------------------------
+  # Optional: Tag for visibility and audit tracking
+  # ---------------------------------------------------------------------------
   tags = {
     Name = "index.html"
   }
 }
 
-# ------------------------------------------------------------------------------------------
-# S3 BUCKET POLICY - Allow CloudFront OAC to Access Bucket
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# S3 BUCKET POLICY: Allow CloudFront OAC to Access Bucket
+# ==============================================================================
+# Grants the CloudFront distribution (via Origin Access Control) permission
+# to retrieve objects from this S3 bucket. This ensures secure access
+# through CloudFront without making the bucket public.
+# ------------------------------------------------------------------------------
 data "aws_iam_policy_document" "s3_oac_policy" {
   statement {
     actions   = ["s3:GetObject"]

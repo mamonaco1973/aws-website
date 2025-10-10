@@ -1,30 +1,45 @@
-# Configure the AWS provider block
-# This section establishes the configuration for the AWS provider, which is essential for Terraform to communicate with AWS services.
-# The provider is responsible for managing and provisioning AWS resources defined in your Terraform code.
-# 
-# 'region' specifies the AWS region where Terraform will create and manage resources.
-# It is critical to set this value correctly, as deploying resources in an incorrect region can lead to higher latency, unexpected costs, or compliance issues.
-# 
-# Note:
-# - Ensure the AWS credentials (e.g., access keys) are properly configured in your environment.
-# - Use the AWS CLI, environment variables, or Terraform's native authentication methods for secure credential management.
-# - Replace "us-east-1" with the desired region code (e.g., "us-west-1") if deploying to a different AWS region.
+# ==============================================================================
+# FILE: main.tf
+# PURPOSE:
+#   - Configure AWS provider settings for Terraform
+#   - Define the default region for resource deployment
+#   - Define a secondary aliased provider for ACM and CloudFront (us-east-1)
+# ==============================================================================
+# REQUIREMENTS:
+#   - AWS credentials must be properly configured (via CLI, environment variables,
+#     or IAM role attached to the instance)
+#   - Ensure the region matches your deployment target
+# ==============================================================================
 
+# ==============================================================================
+# AWS PROVIDER CONFIGURATION
+# ==============================================================================
+# Establishes the default AWS provider used by Terraform for managing resources.
+# The region determines where all AWS infrastructure will be created unless
+# explicitly overridden by a provider alias.
+# ------------------------------------------------------------------------------
 provider "aws" {
-  region = "us-east-1" # Default region set to US East (N. Virginia). Modify if your deployment requires another region.
+  region = "us-east-1"  # Default region (US East - N. Virginia)
 }
 
-# ---------------------------------------------
-# DATA BLOCK: Resolve Route 53 Hosted Zone
-# ---------------------------------------------
+# ==============================================================================
+# DATA BLOCK: Retrieve Route 53 Hosted Zone
+# ==============================================================================
+# Resolves the hosted zone for the target domain. This ensures that all DNS
+# records, certificates, and alias mappings reference the correct Route 53 zone.
+# ------------------------------------------------------------------------------
 data "aws_route53_zone" "selected" {
-  name         = var.domain_name        # e.g., "mikes-cloud-solutions.org."
-  private_zone = false                  # set true if resolving a private zone
+  name         = var.domain_name  # Example: "mikes-cloud-solutions.org."
+  private_zone = false            # Set to true if working with a private hosted zone
 }
 
-# ------------------------------------------------------------------------------------------
-# ALIASED PROVIDER FOR CLOUDFRONT/ACM (must be us-east-1)
-# ------------------------------------------------------------------------------------------
+# ==============================================================================
+# ALIASED PROVIDER: us-east-1 (Required for CloudFront / ACM)
+# ==============================================================================
+# CloudFront and ACM certificates used by CloudFront must be created in the
+# us-east-1 region, even if your primary region is different. This alias allows
+# Terraform to manage those resources correctly.
+# ------------------------------------------------------------------------------
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
