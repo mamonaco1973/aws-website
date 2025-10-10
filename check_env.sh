@@ -1,39 +1,62 @@
 #!/bin/bash
+#================================================================================
+# Script: check_env.sh
+# Purpose:
+#   - Validate that all required CLI tools are available in PATH
+#   - Verify AWS CLI connectivity and authentication
+#   - Abort early if prerequisites are not met
+#================================================================================
 
-echo "NOTE: Validating that required commands are found in your PATH."
-# List of required commands
+#--------------------------------------------------------------------------------
+# 0. Strict Error Handling
+#--------------------------------------------------------------------------------
+set -euo pipefail
+IFS=$'\n\t'
+
+#--------------------------------------------------------------------------------
+# 1. Validate Required Commands
+#--------------------------------------------------------------------------------
+echo "NOTE: Validating that required commands are found in PATH..."
+
+# List of required command-line tools
 commands=("aws" "terraform" "jq")
 
-# Flag to track if all commands are found
+# Flag to track whether all commands are present
 all_found=true
 
-# Iterate through each command and check if it's available
+# Loop through each required command and verify availability
 for cmd in "${commands[@]}"; do
-  if ! command -v "$cmd" &> /dev/null; then
-    echo "ERROR: $cmd is not found in the current PATH."
-    all_found=false
-  else
-    echo "NOTE: $cmd is found in the current PATH."
-  fi
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "ERROR: $cmd is not found in the current PATH."
+        all_found=false
+    else
+        echo "NOTE: $cmd is found in the current PATH."
+    fi
 done
 
-# Final status
-if [ "$all_found" = true ]; then
-  echo "NOTE: All required commands are available."
-else
-  echo "ERROR: One or more commands are missing."
-  exit 1
+# Exit if any command was missing
+if [ "$all_found" = false ]; then
+    echo "ERROR: One or more required commands are missing."
+    exit 1
 fi
 
-echo "NOTE: Checking AWS cli connection."
+echo "NOTE: All required commands are available."
 
-aws sts get-caller-identity --query "Account" --output text >> /dev/null
+#--------------------------------------------------------------------------------
+# 2. Validate AWS CLI Connectivity
+#--------------------------------------------------------------------------------
+echo "NOTE: Checking AWS CLI connection..."
 
-# Check the return code of the login command
-if [ $? -ne 0 ]; then
-  echo "ERROR: Failed to connect to AWS. Please check your credentials and environment variables."
-  exit 1
-else
-  echo "NOTE: Successfully logged into AWS."
+# Attempt to retrieve AWS account identity to confirm credentials are valid
+if ! aws sts get-caller-identity --query "Account" --output text &> /dev/null; then
+    echo "ERROR: Failed to connect to AWS. Please check your credentials and environment."
+    exit 1
 fi
 
+echo "NOTE: Successfully authenticated with AWS."
+
+#--------------------------------------------------------------------------------
+# 3. Validation Complete
+#--------------------------------------------------------------------------------
+echo "NOTE: Environment validation successful."
+#================================================================================

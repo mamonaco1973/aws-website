@@ -1,24 +1,37 @@
 #!/bin/bash
+#================================================================================
+# Script: destroy.sh
+# Purpose:
+#   - Destroy all AWS S3 website infrastructure previously provisioned
+#   - Ensure clean teardown of Terraform-managed resources in the 01-website dir
+#================================================================================
 
-############################################
-# SET DEFAULT AWS REGION
-############################################
+#--------------------------------------------------------------------------------
+# 0. Strict Error Handling
+#--------------------------------------------------------------------------------
+set -euo pipefail
+IFS=$'\n\t'
 
-# Export the AWS region to ensure all AWS CLI commands run in the correct context
+#--------------------------------------------------------------------------------
+# 1. Set Default AWS Region
+#--------------------------------------------------------------------------------
 export AWS_DEFAULT_REGION="us-east-1"
+echo "NOTE: AWS default region set to ${AWS_DEFAULT_REGION}"
 
-############################################
-# STEP 1: DESTROY STORAGE(01-infrastructure)
-############################################
+#--------------------------------------------------------------------------------
+# 2. Destroy Website Infrastructure (01-website)
+#--------------------------------------------------------------------------------
+echo "NOTE: Starting destruction of website infrastructure..."
 
-# Navigate into the storage infrastructure folder
-cd 01-storage
+cd 01-website
 
-# Reinitialize Terraform backend
 terraform init
-
-# Destroy all S3 buckets and related resources provisioned earlier
 terraform destroy -auto-approve
 
-# Return to project root
 cd ..
+
+#--------------------------------------------------------------------------------
+# 3. Completion
+#--------------------------------------------------------------------------------
+echo "NOTE: Website infrastructure destruction complete."
+#================================================================================

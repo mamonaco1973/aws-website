@@ -1,10 +1,10 @@
 #!/bin/bash
 #================================================================================
-# Script: build-storage.sh
+# Script: apply.sh
 # Purpose:
 #   - Validate environment prerequisites
 #   - Set AWS region for Terraform operations
-#   - Initialize and apply Terraform to provision S3-based website storage
+#   - Initialize and apply Terraform to provision S3-based website 
 #================================================================================
 
 #--------------------------------------------------------------------------------
@@ -16,6 +16,7 @@ IFS=$'\n\t'
 #--------------------------------------------------------------------------------
 # 1. Validate the Environment
 #--------------------------------------------------------------------------------
+
 echo "NOTE: Running environment validation..."
 ./check_env.sh
 
@@ -28,9 +29,10 @@ export AWS_DEFAULT_REGION="us-east-1"
 echo "NOTE: AWS default region set to ${AWS_DEFAULT_REGION}"
 
 #--------------------------------------------------------------------------------
-# 3. Build Website Storage (S3)
+# 3. Build Website with S3 with HTTPS
 #--------------------------------------------------------------------------------
-echo "NOTE: Building website storage..."
+
+echo "NOTE: Building website with S3..."
 
 cd 01-storage
 
@@ -39,5 +41,5 @@ terraform apply -auto-approve
 
 cd ..
 
-echo "NOTE: Website storage provisioning complete."
+echo "NOTE: Website provisioning complete."
 #================================================================================
