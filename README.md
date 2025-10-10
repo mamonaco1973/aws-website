@@ -27,10 +27,8 @@ If this is your first time watching our content, we recommend starting with this
 
 ## Deployment Flow
 
-## Deployment Flow
-
 ```mermaid
-flowchart TD
+flowchart LR
     A[Manual Domain Registration in AWS Console via Route 53] --> B[Create Hosted Zone and DNS Records]
     B --> C[Run check_env.sh to Validate AWS CLI and Terraform Setup]
     C --> D[Run apply.sh to Initialize Terraform Backend]
