@@ -83,9 +83,9 @@ After a successful run of `apply.sh`, Terraform provisions a complete static web
 | Component | Description |
 |------------|--------------|
 | **S3 Bucket** | Stores all website content (e.g., `index.html`). Configured for static website hosting with public access disabled and CloudFront as the only allowed origin. |
-| **CloudFront Distribution** | Delivers website content globally over HTTPS. Uses the S3 bucket as its origin and automatically redirects all HTTP requests to HTTPS. |
 | **ACM Certificate** | Validates domain ownership and secures the CloudFront distribution with SSL/TLS encryption. The certificate is provisioned in the **us-east-1** region, as required by CloudFront. |
-| **Route 53 Hosted Zone** | Contains DNS records associated with the manually registered domain (created in the AWS Console). CloudFront’s distribution URL can be aliased to this hosted zone later if desired. |
+| **CloudFront Distribution** | Delivers website content globally over HTTPS. Uses the S3 bucket as its origin and automatically redirects all HTTP requests to HTTPS. |
+| **Route 53 Hosted Zone** | Contains DNS records associated with the manually registered domain (created in the AWS Console). CloudFront’s distribution URL will be aliased to this hosted zone |
 |
 
 Once the build completes, Terraform outputs the CloudFront distribution URL — for example:
