@@ -1,41 +1,43 @@
 #!/bin/bash
+#================================================================================
+# Script: build-storage.sh
+# Purpose:
+#   - Validate environment prerequisites
+#   - Set AWS region for Terraform operations
+#   - Initialize and apply Terraform to provision S3-based website storage
+#================================================================================
 
-############################################
-# STEP 0: ENVIRONMENT VALIDATION
-############################################
+#--------------------------------------------------------------------------------
+# 0. StrictErrorHandling
+#--------------------------------------------------------------------------------
+set -euo pipefail
+IFS=$'\n\t'
 
-# Execute the environment check script to ensure all preconditions are met
+#--------------------------------------------------------------------------------
+# 1. Validate the Environment
+#--------------------------------------------------------------------------------
+echo "NOTE: Running environment validation..."
 ./check_env.sh
 
-# If the script failed (non-zero exit code), abort the process immediately
 if [ $? -ne 0 ]; then
-  echo "ERROR: Environment check failed. Exiting."
-  exit 1
+    echo "ERROR: Environment check failed. Exiting."
+    exit 1
 fi
 
-############################################
-# STEP 1: SET AWS DEFAULT REGION
-############################################
-
-# Set the AWS region for all subsequent CLI commands
 export AWS_DEFAULT_REGION="us-east-1"
+echo "NOTE: AWS default region set to ${AWS_DEFAULT_REGION}"
 
-############################################
-# STEP 2: TERRAFORM - BUILD NETWORKING INFRASTRUCTURE
-############################################
+#--------------------------------------------------------------------------------
+# 3. Build Website Storage (S3)
+#--------------------------------------------------------------------------------
+echo "NOTE: Building website storage..."
 
-# Inform user about infrastructure provisioning step
-echo "NOTE: Building website storage."
-
-# Navigate to the infrastructure provisioning folder
 cd 01-storage
 
-# Initialize the Terraform backend and plugins
 terraform init
-
-# Apply the Terraform configuration non-interactively (auto-approve skips manual confirmation)
 terraform apply -auto-approve
 
-# Return to the root directory
 cd ..
 
+echo "NOTE: Website storage provisioning complete."
+#================================================================================
