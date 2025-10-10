@@ -31,7 +31,7 @@ If this is your first time watching our content, we recommend starting with this
 flowchart LR
     A[Register Domain] --> B[Run Terraform Apply]
     B --> C[Create S3 Bucket + Upload index.html]
-    C --> D[Provision ACM Certificate]
+    C --> D[Provision ACM Certificate for HTTPS]
     D --> E[Deploy CloudFront Distribution]
     E --> F[Verify Website via CloudFront URL]
 ```
