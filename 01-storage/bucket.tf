@@ -11,7 +11,7 @@ locals {
   normalized_domain = replace(var.domain_name, ".", "-")
 
   # Combine domain and AWS Account ID
-  bucket_name = "${local.normalized_domain}-${data.aws_caller_identity.current.account_id}"
+  bucket_name = "${local.normalized_domain}${data.aws_caller_identity.current.account_id}"
 }
 
 # ------------------------------------------------------------------------------------------
