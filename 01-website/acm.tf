@@ -102,3 +102,4 @@ resource "aws_acm_certificate_validation" "cert_validation" {
 output "website_url" {
   description = "Public HTTPS URL for the deployed website"
   value       = "https://www.${local.root_domain}"
+}
