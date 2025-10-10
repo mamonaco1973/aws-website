@@ -28,7 +28,7 @@ If this is your first time watching our content, we recommend starting with this
 ## Deployment Flow
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Manual Domain Registration in AWS Console via Route 53] --> B[Create Hosted Zone and DNS Records]
     B --> C[Run check_env.sh to Validate AWS CLI and Terraform Setup]
     C --> D[Run apply.sh to Initialize Terraform Backend]
@@ -39,3 +39,4 @@ flowchart LR
     H --> I[Verify Website Availability through CloudFront URL]
     I --> J[Optional Step: Run destroy.sh to Tear Down Infrastructure]
 ```
+
