@@ -28,12 +28,15 @@ If this is your first time watching our content, we recommend starting with this
 ## Deployment Flow
 
 ```mermaid
-flowchart TD
-    A[Manual Domain Registration in AWS Console via Route 53] --> B[Run Terraform Apply to Build Infrastructure]
-    B --> C[Create S3 Bucket and Upload Under Construction index.html]
-    C --> D[Provision ACM Certificate for HTTPS]
-    D --> E[Deploy CloudFront Distribution Connected to S3 Bucket]
-    E --> F[Verify Website Availability through CloudFront URL]
+flowchart LR
+    A[Register Domain] --> B[Run Terraform Apply]
+    B --> C[Create S3 Bucket + Upload index.html]
+    C --> D[Provision ACM Certificate]
+    D --> E[Deploy CloudFront Distribution]
+    E --> F[Verify Website via CloudFront URL]
 ```
+
+*Figure 1: End-to-end build process for the AWS static website.*
+
 
 
