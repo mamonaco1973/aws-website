@@ -36,7 +36,75 @@ flowchart LR
     E --> F[Verify Website via CloudFront URL]
 ```
 
-*Figure 1: End-to-end build process for the AWS static website.*
+*Figure 1: End-to-end build process for the simple AWS website.*
 
 
+## Download this Repository
+
+```bash
+git clone https://github.com/mamonaco1973/aws-website.git
+cd aws-website
+```
+
+## Build the Code
+
+Run [check_env](check_env.sh) then run [apply](apply.sh).
+
+```bash
+~/aws-website$ ./apply.sh
+NOTE: Validating that required commands are found in your PATH.
+NOTE: aws is found in the current PATH.
+NOTE: terraform is found in the current PATH.
+NOTE: jq is found in the current PATH.
+NOTE: All required commands are available.
+NOTE: Checking AWS cli connection.
+NOTE: Successfully logged into AWS.
+NOTE: Building networking infrastructure.
+Initializing the backend...
+Initializing provider plugins...
+- Finding latest version of hashicorp/aws...
+- Finding latest version of hashicorp/random...
+- Installing hashicorp/aws v5.96.0...
+- Installed hashicorp/aws v5.96.0 (signed by HashiCorp)
+- Installing hashicorp/random v3.7.2...
+- Installed hashicorp/random v3.7.2 (signed by HashiCorp)
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+```
+
+## Build Results
+
+After a successful run of `apply.sh`, Terraform provisions a complete static website infrastructure on AWS. The following resources are created and configured automatically:
+
+| Component | Description |
+|------------|--------------|
+| **S3 Bucket** | Stores all website content (e.g., `index.html`). Configured for static website hosting with public access disabled and CloudFront as the only allowed origin. |
+| **CloudFront Distribution** | Delivers website content globally over HTTPS. Uses the S3 bucket as its origin and automatically redirects all HTTP requests to HTTPS. |
+| **ACM Certificate** | Validates domain ownership and secures the CloudFront distribution with SSL/TLS encryption. The certificate is provisioned in the **us-east-1** region, as required by CloudFront. |
+| **Route 53 Hosted Zone** | Contains DNS records associated with the manually registered domain (created in the AWS Console). CloudFront’s distribution URL can be aliased to this hosted zone later if desired. |
+|
+
+Once the build completes, Terraform outputs the CloudFront distribution URL — for example:
+
+```
+Outputs:
+
+website_url = "https://mikes-cloud-solutions.com"
+```
+
+You can visit this URL to confirm successful deployment. The default `index.html` displays an **“Under Construction”** page, which can later be replaced by your production site content.
+
+---
+
+**Teardown:**  
+To remove all resources and avoid unnecessary costs, run:
+
+```bash
+./destroy.sh
+```
+This command safely destroys all Terraform-managed infrastructure while leaving your manually registered domain intact.
 
