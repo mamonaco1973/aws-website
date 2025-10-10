@@ -43,10 +43,6 @@ resource "aws_route53_record" "cert_validation" {
   records = [each.value.value]
 
   allow_overwrite = true
-
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 # ------------------------------------------------------------------------------------------
