@@ -21,3 +21,11 @@ data "aws_route53_zone" "selected" {
   name         = var.domain_name        # e.g., "mikes-cloud-solutions.org."
   private_zone = false                  # set true if resolving a private zone
 }
+
+# ------------------------------------------------------------------------------------------
+# ALIASED PROVIDER FOR CLOUDFRONT/ACM (must be us-east-1)
+# ------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
