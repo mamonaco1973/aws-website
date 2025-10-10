@@ -88,3 +88,19 @@ resource "aws_route53_record" "www_alias" {
     evaluate_target_health = false
   }
 }
+
+# ------------------------------------------------------------------------------------------
+# ROUTE 53 ALIAS RECORD - Root Domain -> CloudFront
+# ------------------------------------------------------------------------------------------
+resource "aws_route53_record" "root_alias" {
+  zone_id = data.aws_route53_zone.selected.zone_id
+  name    = local.root_domain     # e.g. "mikes-cloud-solutions.com"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.cdn.domain_name
+    zone_id                = aws_cloudfront_distribution.cdn.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
