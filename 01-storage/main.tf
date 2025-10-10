@@ -8,10 +8,9 @@
 # Note:
 # - Ensure the AWS credentials (e.g., access keys) are properly configured in your environment.
 # - Use the AWS CLI, environment variables, or Terraform's native authentication methods for secure credential management.
-# - Replace "us-east-2" with the desired region code (e.g., "us-west-1") if deploying to a different AWS region.
+# - Replace "us-east-1" with the desired region code (e.g., "us-west-1") if deploying to a different AWS region.
 
 provider "aws" {
-  region = "us-east-2" # Default region set to US East (Ohio). Modify if your deployment requires another region.
+  region = "us-east-1" # Default region set to US East (N. Virginia). Modify if your deployment requires another region.
 }
-
 
