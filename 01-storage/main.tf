@@ -14,3 +14,18 @@ provider "aws" {
   region = "us-east-1" # Default region set to US East (N. Virginia). Modify if your deployment requires another region.
 }
 
+# ---------------------------------------------
+# DATA BLOCK: Resolve Route 53 Hosted Zone
+# ---------------------------------------------
+data "aws_route53_zone" "selected" {
+  name         = var.domain_name        # e.g., "mikes-cloud-solutions.org."
+  private_zone = false                  # set true if resolving a private zone
+}
+
+# ---------------------------------------------
+# VARIABLE: Domain Name
+# ---------------------------------------------
+variable "domain_name" {
+  description = "The fully-qualified domain name of the Route 53 hosted zone (e.g., mikes-cloud-solutions.org.)"
+  type        = string
+}
