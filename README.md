@@ -24,3 +24,18 @@ The included Bash scripts (`apply.sh`, `check_env.sh`, and `destroy.sh`) streaml
 * [Install Latest Terraform](https://developer.hashicorp.com/terraform/install)
 
 If this is your first time watching our content, we recommend starting with this video: [AWS + Terraform: Easy Setup](https://youtu.be/BCMQo0CB9wk). It provides a step-by-step guide to properly configure Terraform, Packer, and the AWS CLI.
+
+```mermaid
+flowchart TD
+
+A[Manual Domain Registration<br>(AWS Console - Route 53)] --> B[Create Hosted Zone<br>and DNS Records]
+
+B --> C[Run check_env.sh<br>Validate AWS CLI & Terraform Setup]
+C --> D[Run apply.sh<br>Initialize Terraform Backend]
+D --> E[Terraform Apply<br>Create S3 Bucket for Website Content]
+E --> F[Provision ACM Certificate<br>for HTTPS via CloudFront]
+F --> G[Deploy CloudFront Distribution<br>Linked to S3 Origin & SSL]
+G --> H[Upload index.html<br>to S3 Bucket]
+H --> I[Verify Website Availability<br>via CloudFront URL]
+I --> J[Optional: Run destroy.sh<br>Cleanly Tear Down Infrastructure]
+```
