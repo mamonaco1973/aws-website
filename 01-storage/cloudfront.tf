@@ -55,7 +55,10 @@ resource "aws_cloudfront_distribution" "cdn" {
   # ----------------------------------------------------------------------------------------
   # ALIASES - Custom Domain for CloudFront
   # ----------------------------------------------------------------------------------------
-  aliases = ["www.${local.root_domain}"]
+  aliases = [
+    local.root_domain,               # mikes-cloud-solutions.com
+    "www.${local.root_domain}"       # www.mikes-cloud-solutions.com
+  ]
 
   # ----------------------------------------------------------------------------------------
   # GENERAL SETTINGS
