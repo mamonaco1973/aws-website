@@ -25,17 +25,17 @@ The included Bash scripts (`apply.sh`, `check_env.sh`, and `destroy.sh`) streaml
 
 If this is your first time watching our content, we recommend starting with this video: [AWS + Terraform: Easy Setup](https://youtu.be/BCMQo0CB9wk). It provides a step-by-step guide to properly configure Terraform, Packer, and the AWS CLI.
 
+## Deployment Flow
+
 ```mermaid
 flowchart TD
-
-A[Manual Domain Registration<br>(AWS Console - Route 53)] --> B[Create Hosted Zone<br>and DNS Records]
-
-B --> C[Run check_env.sh<br>Validate AWS CLI & Terraform Setup]
-C --> D[Run apply.sh<br>Initialize Terraform Backend]
-D --> E[Terraform Apply<br>Create S3 Bucket for Website Content]
-E --> F[Provision ACM Certificate<br>for HTTPS via CloudFront]
-F --> G[Deploy CloudFront Distribution<br>Linked to S3 Origin & SSL]
-G --> H[Upload index.html<br>to S3 Bucket]
-H --> I[Verify Website Availability<br>via CloudFront URL]
-I --> J[Optional: Run destroy.sh<br>Cleanly Tear Down Infrastructure]
+    A[Manual Domain Registration (AWS Console - Route 53)] --> B[Create Hosted Zone and DNS Records]
+    B --> C[Run check_env.sh - Validate AWS CLI and Terraform Setup]
+    C --> D[Run apply.sh - Initialize Terraform Backend]
+    D --> E[Terraform Apply - Create S3 Bucket for Website Content]
+    E --> F[Provision ACM Certificate for HTTPS via CloudFront]
+    F --> G[Deploy CloudFront Distribution - Linked to S3 Origin and SSL]
+    G --> H[Upload index.html to S3 Bucket]
+    H --> I[Verify Website Availability via CloudFront URL]
+    I --> J[Optional: Run destroy.sh - Tear Down Infrastructure]
 ```
