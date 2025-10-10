@@ -29,14 +29,11 @@ If this is your first time watching our content, we recommend starting with this
 
 ```mermaid
 flowchart TD
-    A[Manual Domain Registration in AWS Console via Route 53] --> B[Create Hosted Zone and DNS Records]
-    B --> C[Run check_env.sh to Validate AWS CLI and Terraform Setup]
-    C --> D[Run apply.sh to Initialize Terraform Backend]
-    D --> E[Terraform Apply to Create S3 Bucket for Website Content]
-    E --> F[Provision ACM Certificate for HTTPS using CloudFront]
-    F --> G[Deploy CloudFront Distribution Connected to S3 Origin and SSL]
-    G --> H[Upload index.html File to S3 Bucket]
-    H --> I[Verify Website Availability through CloudFront URL]
-    I --> J[Optional Step: Run destroy.sh to Tear Down Infrastructure]
+    A[Manual Domain Registration in AWS Console via Route 53] --> B[Run Terraform Apply to Build Infrastructure]
+    B --> C[Create S3 Bucket and Upload Under Construction index.html]
+    C --> D[Provision ACM Certificate for HTTPS]
+    D --> E[Deploy CloudFront Distribution Connected to S3 Bucket]
+    E --> F[Verify Website Availability through CloudFront URL]
 ```
+
 
