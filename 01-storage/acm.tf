@@ -1,23 +1,31 @@
 # ------------------------------------------------------------------------------------------
+# LOCALS: Normalize Domain Name (remove trailing dot)
+# ------------------------------------------------------------------------------------------
+locals {
+  # Some AWS APIs return zone.name with a trailing dot (e.g. "example.com.")
+  root_domain = trimsuffix(data.aws_route53_zone.selected.name, ".")
+}
+
+# ------------------------------------------------------------------------------------------
 # ACM CERTIFICATE: Wildcard + Root Domain
 # ------------------------------------------------------------------------------------------
 resource "aws_acm_certificate" "site_cert" {
-  provider                = aws.us_east_1
-  domain_name             = var.domain_name
-  subject_alternative_names = ["*.${var.domain_name}"]
-  validation_method       = "DNS"
+  provider                  = aws.us_east_1
+  domain_name               = local.root_domain
+  subject_alternative_names = ["*.${local.root_domain}"]
+  validation_method         = "DNS"
 
   lifecycle {
     create_before_destroy = true
   }
 
   tags = {
-    Name = "Wildcard-${var.domain_name}"
+    Name = "Wildcard-${local.root_domain}"
   }
 }
 
 # ------------------------------------------------------------------------------------------
-# DNS VALIDATION RECORDS (Route 53)
+# DNS VALIDATION RECORDS (Use the same Hosted Zone)
 # ------------------------------------------------------------------------------------------
 resource "aws_route53_record" "cert_validation" {
   for_each = {
@@ -36,7 +44,7 @@ resource "aws_route53_record" "cert_validation" {
 }
 
 # ------------------------------------------------------------------------------------------
-# VALIDATE THE CERTIFICATE
+# VALIDATE CERTIFICATE
 # ------------------------------------------------------------------------------------------
 resource "aws_acm_certificate_validation" "cert_validation" {
   provider                = aws.us_east_1
