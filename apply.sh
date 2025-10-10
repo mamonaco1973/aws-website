@@ -34,7 +34,7 @@ echo "NOTE: AWS default region set to ${AWS_DEFAULT_REGION}"
 
 echo "NOTE: Building website with S3..."
 
-cd 01-storage
+cd 01-website
 
 terraform init
 terraform apply -auto-approve
