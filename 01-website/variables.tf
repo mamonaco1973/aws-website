@@ -22,5 +22,5 @@
 variable "domain_name" {
   description = "Fully-qualified domain name of the Route 53 hosted zone (e.g., mikes-cloud-solutions.org.)"
   type        = string
-  default     = "mikes-cloud-solutions.com."  # Replace with your domain name
+  #default     = "mikes-cloud-solutions.com."  # Replace with your domain name
 }
