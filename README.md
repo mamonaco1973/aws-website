@@ -1,110 +1,80 @@
-## Simple Website in AWS with Terraform & CloudFront
+# Static Website on AWS: S3 + CloudFront + ACM
 
-This project automates the deployment of a fully secure, production-ready **static website on AWS**, leveraging **Terraform** for infrastructure-as-code and **CloudFront** for global HTTPS delivery. The site’s content is hosted in an **Amazon S3 bucket**, served through **CloudFront** with an **ACM-issued SSL certificate**, ensuring fast and secure access from anywhere in the world.
+A secure static website built with Terraform: the content lives in a
+**private S3 bucket**, **CloudFront** serves it over HTTPS with an **ACM**
+certificate, and **Route 53** points your domain and `www` at the
+distribution. The only manual step is registering the domain.
 
-The included Bash scripts (`apply.sh`, `check_env.sh`, and `destroy.sh`) streamline the full lifecycle — from environment validation and provisioning to clean teardown — making this an ideal foundation for static website hosting, personal portfolios, or documentation portals.
+![Under construction page](website.png)
 
-![website](website.png)
+| Piece | Where | Role |
+|---|---|---|
+| **S3 bucket** | us-east-1 | `<domain-with-dashes><account-id>`: holds `index.html`; versioned, AES-256 encrypted, public access blocked; readable only by the distribution |
+| **CloudFront distribution** | global | origin is the bucket through Origin Access Control; redirects HTTP to HTTPS; `PriceClass_100`; answers for the domain and `www` |
+| **ACM certificate** | us-east-1 (CloudFront requires it) | the domain plus a wildcard, validated with DNS records in the hosted zone |
+| **Route 53** | your hosted zone | alias `A` records for the root and `www`, plus the certificate's validation records |
 
-**Note:** The only manual step in this process is **domain registration**. This project assumes you register your domain manually in the AWS Management Console (via Route 53). Once the domain is created and the hosted zone exists, Terraform takes over — automating the rest of the deployment, including S3 storage, CloudFront distribution, and ACM certificate provisioning.   In the accompanying video tutorial, we walk through these manual domain registration steps in detail before moving into the Terraform automation.
+## Architecture
 
-## Key Features
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="architecture-dark.svg">
+  <img alt="A browser looks up the domain in Route 53, whose root and www alias records point at a CloudFront distribution, and fetches the site over HTTPS. CloudFront serves an ACM certificate for the domain and its wildcard, issued in us-east-1 and validated with DNS records Terraform writes into the hosted zone, and reads index.html from a private, versioned, encrypted S3 bucket through Origin Access Control." src="architecture-light.svg">
+</picture>
 
-- **Manual Domain Setup**: Domain registration is handled in the AWS console; all other steps are fully automated through Terraform and scripts.  
-- **Infrastructure as Code (IaC)**: All AWS resources are defined declaratively in Terraform for reproducibility and version control.  
-- **HTTPS Everywhere**: Automatically provisions an SSL certificate via AWS Certificate Manager (ACM) and enforces HTTPS through CloudFront.  
-- **Secure Origin Access**: Uses CloudFront Origin Access Control (OAC) to restrict direct S3 access, protecting the site from public exposure.  
-- **Automated Lifecycle**: Shell scripts manage build, validation, and teardown, simplifying infrastructure operations.  
+Regenerate with `python3 make_diagram.py`.
+
+**`01-website/`** is the whole stack: `bucket.tf` (the bucket, its security
+settings, the `index.html` upload and the bucket policy that admits only the
+distribution), `acm.tf` (certificate and validation records), and
+`cloudfront.tf` (Origin Access Control, the distribution and the alias
+records).
 
 ## Prerequisites
 
-* [A Registered Domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html)
+* [A registered domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html)
+  with a Route 53 hosted zone. Registering it in the Route 53 console
+  creates the zone; the video walks through this step.
 * [An AWS Account](https://aws.amazon.com/console/)
-* [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) 
-* [Install Latest Terraform](https://developer.hashicorp.com/terraform/install)
+* [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+* [Install Terraform](https://developer.hashicorp.com/terraform/install)
+* [Install jq](https://jqlang.github.io/jq/download/)
 
-If this is your first time watching our content, we recommend starting with this video: [AWS + Terraform: Easy Setup](https://youtu.be/BCMQo0CB9wk). It provides a step-by-step guide to properly configure Terraform, Packer, and the AWS CLI.
+If this is your first time watching our content, we recommend starting with
+this video: [AWS + Terraform: Easy Setup](https://youtu.be/BCMQo0CB9wk).
 
-## Deployment Flow
-
-```mermaid
-flowchart LR
-    A[Register Domain] --> B[Run Terraform Apply]
-    B --> C[Create S3 Bucket + Upload index.html]
-    C --> D[Provision ACM Certificate for HTTPS]
-    D --> E[Deploy CloudFront Distribution]
-    E --> F[Verify Website via CloudFront URL]
-```
-
-*Figure 1: End-to-end build process for the simple AWS website.*
-
-
-## Download this Repository
+## Deploy
 
 ```bash
 git clone https://github.com/mamonaco1973/aws-website.git
 cd aws-website
+export TF_VAR_domain_name="mikes-cloud-solutions.com."   # your hosted zone, with the trailing dot
+./apply.sh
 ```
 
-## Build the Code
+`domain_name` has no default; without `TF_VAR_domain_name`, Terraform asks
+for it. The certificate's DNS validation and the CloudFront deployment take
+the longest. When it finishes, Terraform prints:
 
-Run [check_env](check_env.sh) then run [apply](apply.sh).
+```
+website_url = "https://www.mikes-cloud-solutions.com"
+```
+
+## Try it
+
+Open `https://your-domain` or `https://www.your-domain`: the "Under
+Construction" page from `01-website/index.html`. Replace that file and run
+`./apply.sh` again to publish your own content.
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| `apply.sh` hangs on the certificate validation | The hosted zone must be the domain's authoritative zone; check that the registrar's name servers match the zone's NS records. |
+| The site returns `AccessDenied` | Use the domain, not the bucket URL: the bucket only admits the CloudFront distribution. |
+| An updated page doesn't show | CloudFront caches it; create an invalidation for `/*` or wait for the cache to expire. |
+
+## Teardown
 
 ```bash
-~/aws-website$ ./apply.sh
-NOTE: Validating that required commands are found in your PATH.
-NOTE: aws is found in the current PATH.
-NOTE: terraform is found in the current PATH.
-NOTE: jq is found in the current PATH.
-NOTE: All required commands are available.
-NOTE: Checking AWS cli connection.
-NOTE: Successfully logged into AWS.
-NOTE: Building networking infrastructure.
-Initializing the backend...
-Initializing provider plugins...
-- Finding latest version of hashicorp/aws...
-- Finding latest version of hashicorp/random...
-- Installing hashicorp/aws v5.96.0...
-- Installed hashicorp/aws v5.96.0 (signed by HashiCorp)
-- Installing hashicorp/random v3.7.2...
-- Installed hashicorp/random v3.7.2 (signed by HashiCorp)
-Terraform has created a lock file .terraform.lock.hcl to record the provider
-selections it made above. Include this file in your version control repository
-so that Terraform can guarantee to make the same selections by default when
-you run "terraform init" in the future.
-
-Terraform has been successfully initialized!
+./destroy.sh     # destroys everything Terraform built; the domain and hosted zone stay
 ```
-
-## Build Results
-
-After a successful run of `apply.sh`, Terraform provisions a complete static website infrastructure on AWS. The following resources are created and configured automatically:
-
-| Component | Description |
-|------------|--------------|
-| **S3 Bucket** | Stores all website content (e.g., `index.html`). Configured for static website hosting with public access disabled and CloudFront as the only allowed origin. |
-| **ACM Certificate** | Validates domain ownership and secures the CloudFront distribution with SSL/TLS encryption. The certificate is provisioned in the **us-east-1** region, as required by CloudFront. |
-| **CloudFront Distribution** | Delivers website content globally over HTTPS. Uses the S3 bucket as its origin and automatically redirects all HTTP requests to HTTPS. |
-| **Route 53 Hosted Zone** | Contains DNS records associated with the manually registered domain (created in the AWS Console). CloudFront’s distribution URL will be aliased to this hosted zone |
-|
-
-Once the build completes, Terraform outputs the CloudFront distribution URL — for example:
-
-```
-Outputs:
-
-website_url = "https://mikes-cloud-solutions.com"
-```
-
-You can visit this URL to confirm successful deployment. The default `index.html` displays an **“Under Construction”** page, which can later be replaced by your production site content.
-
----
-
-**Teardown:**  
-To remove all resources and avoid unnecessary costs, run:
-
-```bash
-./destroy.sh
-```
-This command safely destroys all Terraform-managed infrastructure while leaving your manually registered domain intact.
-
